@@ -11,15 +11,6 @@ type KitchenFilterTab = 'all' | 'pending' | 'accepted' | 'preparing' | 'ready';
 export const KitchenDashboard: React.FC = () => {
   const { restaurantId } = useParams<{ restaurantId: string }>();
 
-  const [pin, setPin] = useState<string>(() => {
-    return sessionStorage.getItem(`kitchen_pin_${restaurantId}`) || '';
-  });
-  const [pinInput, setPinInput] = useState<string>('');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!sessionStorage.getItem(`kitchen_pin_${restaurantId}`);
-  });
-  const [authError, setAuthError] = useState<string | null>(null);
-
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -38,65 +29,43 @@ export const KitchenDashboard: React.FC = () => {
   }, [restaurantId]);
 
   // Load kitchen orders
-  const loadOrders = useCallback(async (currentPin: string, isSilent = false) => {
-    if (!restaurantId || !currentPin) return;
+  const loadOrders = useCallback(async (isSilent = false) => {
+    if (!restaurantId) return;
     if (!isSilent) setLoading(true);
     setRefreshError(null);
 
     try {
-      const data = await fetchKitchenOrders(restaurantId, currentPin);
+      const data = await fetchKitchenOrders(restaurantId);
       setOrders(data);
-      setIsAuthenticated(true);
-      sessionStorage.setItem(`kitchen_pin_${restaurantId}`, currentPin);
     } catch (err: unknown) {
       const errorMsg = (err as Error).message || 'Failed to fetch orders';
-      if (/pin|unauthorized|forbidden|401|403/i.test(errorMsg)) {
-        setIsAuthenticated(false);
-        sessionStorage.removeItem(`kitchen_pin_${restaurantId}`);
-        setAuthError('Invalid Kitchen PIN. Please enter the correct 4-digit PIN.');
-      } else {
-        setRefreshError(errorMsg);
-      }
+      setRefreshError(errorMsg);
     } finally {
       if (!isSilent) setLoading(false);
     }
   }, [restaurantId]);
 
-  // Handle PIN form submission
-  const handlePinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput.trim().length < 4) {
-      setAuthError('Please enter a 4-digit numeric PIN.');
-      return;
-    }
-    setPin(pinInput);
-    setAuthError(null);
-    loadOrders(pinInput, false);
-  };
-
-  // Auto-refresh orders every 10 seconds when authenticated
+  // Auto-refresh orders every 10 seconds
   useEffect(() => {
-    if (isAuthenticated && pin) {
-      loadOrders(pin, false);
+    loadOrders(false);
 
-      pollIntervalRef.current = window.setInterval(() => {
-        loadOrders(pin, true);
-      }, 10000);
+    pollIntervalRef.current = window.setInterval(() => {
+      loadOrders(true);
+    }, 10000);
 
-      return () => {
-        if (pollIntervalRef.current) {
-          clearInterval(pollIntervalRef.current);
-        }
-      };
-    }
-  }, [isAuthenticated, pin, loadOrders]);
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [loadOrders]);
 
   // Update order status
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
-    if (!restaurantId || !pin) return;
+    if (!restaurantId) return;
     setUpdatingOrderId(orderId);
     try {
-      const updated = await updateOrderStatus(restaurantId, orderId, newStatus, pin);
+      const updated = await updateOrderStatus(restaurantId, orderId, newStatus);
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? updated : o))
       );
@@ -120,60 +89,6 @@ export const KitchenDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <ErrorDisplay title="Missing Restaurant ID" message="Access via /kitchen/:restaurantId" />
-      </div>
-    );
-  }
-
-  // PIN Entry Screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center p-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-          <div className="w-16 h-16 bg-orange-600/20 text-orange-400 border border-orange-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-
-          <h1 className="text-xl font-black text-gray-100 mb-1">
-            Kitchen Display System
-          </h1>
-          <p className="text-xs text-gray-400 mb-6">
-            Enter 4-digit kitchen security PIN to unlock orders
-          </p>
-
-          {authError && (
-            <div className="mb-4 p-3 bg-red-950/50 border border-red-800 text-red-300 text-xs rounded-xl">
-              {authError}
-            </div>
-          )}
-
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <input
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={6}
-              value={pinInput}
-              onChange={(e) => setPinInput(e.target.value)}
-              placeholder="••••"
-              aria-label="Kitchen PIN"
-              className="w-full text-center text-3xl font-mono tracking-widest px-4 py-3 bg-gray-950 border border-gray-700 rounded-xl text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/50"
-              autoFocus
-            />
-
-            <button
-              type="submit"
-              className="w-full min-h-[46px] py-3 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-bold rounded-xl transition-all shadow-md shadow-orange-600/30 text-sm"
-            >
-              Unlock Dashboard
-            </button>
-          </form>
-
-          <p className="mt-4 text-[11px] text-gray-500">
-            Default Demo PIN: <code className="text-orange-400 font-mono">1234</code>
-          </p>
-        </div>
       </div>
     );
   }
@@ -212,18 +127,6 @@ export const KitchenDashboard: React.FC = () => {
               <span>QR Codes</span>
             </Link>
 
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.removeItem(`kitchen_pin_${restaurantId}`);
-                setIsAuthenticated(false);
-                setPin('');
-              }}
-              title="Lock screen"
-              className="min-h-[40px] px-3 py-1.5 bg-red-950/40 hover:bg-red-900/60 border border-red-800/50 text-red-400 text-xs font-semibold rounded-xl transition-colors"
-            >
-              Lock
-            </button>
           </div>
         </div>
       </header>
@@ -270,7 +173,7 @@ export const KitchenDashboard: React.FC = () => {
             <ErrorDisplay
               title="Connection Warning"
               message={refreshError}
-              onRetry={() => loadOrders(pin, false)}
+              onRetry={() => loadOrders(false)}
             />
           </div>
         )}

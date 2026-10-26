@@ -29,31 +29,11 @@ def verify_kitchen_pin(
     x_kitchen_pin: Optional[str] = Header(
         None,
         alias="X-Kitchen-Pin",
-        description="Kitchen station access PIN",
+        description="Kitchen station access PIN (Optional)",
     ),
 ) -> str:
-    """Validate that the request includes a valid X-Kitchen-Pin header.
-
-    Args:
-        x_kitchen_pin (Optional[str]): Header value supplied by client.
-
-    Returns:
-        str: Validated PIN.
-
-    Raises:
-        HTTPException: 401 Unauthorized if PIN is missing or incorrect.
-    """
-    settings = get_settings()
-    configured_pin = settings.KITCHEN_PIN.strip() if settings.KITCHEN_PIN else "1234"
-
-    if not x_kitchen_pin or x_kitchen_pin.strip() != configured_pin:
-        logger.warning("Unauthorized kitchen access attempt with PIN: %s", x_kitchen_pin)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing kitchen security PIN in 'X-Kitchen-Pin' header.",
-            headers={"WWW-Authenticate": "KitchenPin"},
-        )
-    return x_kitchen_pin
+    """Allow open kitchen access without requiring a PIN."""
+    return x_kitchen_pin or "open"
 
 
 @router.get(

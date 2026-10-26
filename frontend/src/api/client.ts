@@ -8,7 +8,7 @@ import type {
   Language,
 } from '../types';
 
-const BASE_URL = '';
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 class ApiError extends Error {
   status: number;
@@ -221,7 +221,7 @@ export async function confirmOrder(orderId: string): Promise<Order> {
 
 export async function fetchKitchenOrders(
   restaurantId: string,
-  pin: string,
+  pin: string = '',
   statuses?: string[]
 ): Promise<Order[]> {
   try {
@@ -248,7 +248,7 @@ export async function updateOrderStatus(
   restaurantId: string,
   orderId: string,
   status: string,
-  pin: string
+  pin: string = ''
 ): Promise<Order> {
   try {
     const res = await fetch(
