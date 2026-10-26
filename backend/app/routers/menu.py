@@ -37,6 +37,8 @@ def get_restaurant(
     """
     restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
     if not restaurant:
+        restaurant = db.query(Restaurant).filter(Restaurant.id == "demo-restaurant").first()
+    if not restaurant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Restaurant '{restaurant_id}' not found.",
@@ -69,6 +71,10 @@ async def get_menu(
         MenuResponse: List of filtered and localized menu items.
     """
     restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
+    if not restaurant:
+        restaurant = db.query(Restaurant).filter(Restaurant.id == "demo-restaurant").first()
+        if restaurant:
+            restaurant_id = restaurant.id
     if not restaurant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -176,6 +182,12 @@ def get_menu_item(
         .filter(MenuItem.restaurant_id == restaurant_id, MenuItem.id == item_id)
         .first()
     )
+    if not item:
+        item = (
+            db.query(MenuItem)
+            .filter(MenuItem.restaurant_id == "demo-restaurant", MenuItem.id == item_id)
+            .first()
+        )
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -256,6 +256,10 @@ async def process_message(
     """
     restaurant = db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
     if not restaurant:
+        restaurant = db.query(Restaurant).filter(Restaurant.id == "demo-restaurant").first()
+        if restaurant:
+            restaurant_id = restaurant.id
+    if not restaurant:
         return ConversationResponse(
             response_text=f"Restaurant '{restaurant_id}' could not be located.",
             cart_updates=[],

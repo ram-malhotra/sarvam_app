@@ -47,9 +47,5 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 
     with SessionLocal() as db:
-        existing_items = db.query(MenuItem).first()
-        if not existing_items:
-            logger.info("Database is empty. Populating demo seed menu...")
-            seed_database(db)
-        else:
-            logger.info("Database already initialized with menu items.")
+        seed_database(db)
+    logger.info("Database initialization and seed verification complete.")

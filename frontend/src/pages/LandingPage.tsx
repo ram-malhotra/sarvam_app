@@ -21,7 +21,7 @@ export const LandingPage: React.FC = () => {
         </div>
 
         <Link
-          to="/kitchen/rest-001"
+          to="/kitchen/demo-restaurant"
           className="text-xs font-bold text-gray-700 hover:text-orange-600 bg-white border border-gray-200 px-4 py-2 rounded-xl shadow-xs transition-colors"
         >
           Kitchen Login →
@@ -49,7 +49,7 @@ export const LandingPage: React.FC = () => {
         {/* Demo Action Buttons */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
-            to="/r/rest-001/table-1"
+            to="/r/demo-restaurant/table-1"
             className="min-h-[50px] px-8 py-3.5 bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-base inline-flex items-center gap-2"
           >
             <span>Try Table 1 Demo</span>
@@ -59,14 +59,14 @@ export const LandingPage: React.FC = () => {
           </Link>
 
           <Link
-            to="/r/rest-001/table-2"
+            to="/r/demo-restaurant/table-2"
             className="min-h-[50px] px-6 py-3.5 bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-800 font-bold rounded-2xl shadow-xs transition-colors text-base inline-flex items-center gap-2"
           >
             <span>Table 2 Demo</span>
           </Link>
 
           <Link
-            to="/kitchen/rest-001/qr"
+            to="/kitchen/demo-restaurant/qr"
             className="min-h-[50px] px-6 py-3.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-2xl border border-amber-200 transition-colors text-base inline-flex items-center gap-2"
           >
             <span>Generate QR Standees</span>
