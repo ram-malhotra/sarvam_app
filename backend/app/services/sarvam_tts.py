@@ -13,12 +13,12 @@ DEFAULT_TTS_MODEL = "bulbul:v4-flash"
 MAX_TTS_TEXT_LENGTH = 2500
 
 SPEAKER_MAP: Dict[str, str] = {
-    "hi-IN": "shubh",
-    "en-IN": "shubh",
-    "ta-IN": "shubh",
-    "te-IN": "shubh",
+    "hi-IN": "shubh_hi_customer",
+    "en-IN": "simran_en_customer",
+    "ta-IN": "gokul_ta_narration",
+    "te-IN": "kavitha_te_conversation",
 }
-DEFAULT_SPEAKER = "shubh"
+DEFAULT_SPEAKER = "simran_en_customer"
 
 
 async def synthesize_speech(text: str, language_code: str = "en-IN") -> str:
