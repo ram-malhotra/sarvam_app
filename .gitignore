@@ -1,0 +1,23 @@
+﻿# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*.class
+*.env
+!.env.example
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Databases
+*.db
+*.sqlite3
+
+# Logs and temp files
+*.log
+.pytest_cache/
+.coverage
+.vite/
+*.tsbuildinfo
